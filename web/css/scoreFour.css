@@ -1,0 +1,71 @@
+body {
+    margin: 0
+}
+
+#selectableCards {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.card {
+    width: 148px;
+    height: 230px;
+    border: 5px solid white;
+    zoom: 0.50;
+    display: inline-block;
+}
+
+.selectable:hover {
+    border: 5px solid green;
+    border-radius: 17px;
+    cursor: pointer;
+}
+
+#selectableCards .selected {
+    border: 5px solid green;
+    border-radius: 17px;
+}
+
+#selectableCards .selected:hover {
+    border: 5px solid red;
+}
+
+#selectedCards {
+    text-align: center;
+}
+
+#selectedCards .card {
+    border: 5px solid black;
+    border-radius: 17px;
+    /*zoom: 1.0;*/
+}
+
+#summary {
+    display: none;
+    text-align: center;
+}
+
+#summary #stats div {
+    display: inline-block;
+    width: 33%;
+}
+
+#summary #stats h2 {
+    display: inline-block;
+}
+
+#counts .countsRow {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+#counts .countsRow .countsHeader {
+    font-size: 24px;
+    margin-right: 15px;
+}
+
+#counts .card {
+    zoom: 0.50;
+}
