@@ -96,6 +96,11 @@ func MakeSummaries(hand game.Cards) FourSummary {
 			countCuts[val] = append(countCuts[val], cut)
 		}
 	}
+	for _, val := range countCuts {
+		sort.Slice(val, func(i int, j int) bool {
+			return game.CardByIdString(val[i]).Id < game.CardByIdString(val[j]).Id
+		})
+	}
 	avg := float32(sum) / float32(len(vals))
 	sort.Ints(vals)
 	min := vals[0]

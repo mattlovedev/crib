@@ -1,8 +1,12 @@
 // setup classes
 var styleInnerHTML = ""
 for (let i = 0; i < NumCards; i++) {
-    const x = (i % 13) * (-148) + (i % 13 / 3)
-    const y = Math.floor(i / 13) * (-230)
+    const face = Math.floor(i / 4)
+    const suit = i % 4
+    //const x = (i % 13) * (-148) + (i % 13 / 3)
+    //const y = Math.floor(i / 13) * (-230)
+    const x = face * (-148) + (face / 3)
+    const y = suit * (-230)
     styleInnerHTML += `.card${i} {
         background: url('../web/img/cards.png') ${x}px ${y}px;
     }`
@@ -13,11 +17,13 @@ document.getElementsByTagName('head')[0].appendChild(style)
 
 // setup selectable cards
 var selectableCardsHTML = ""
-for (let i = 0; i < NumCards; i++) {
-    selectableCardsHTML += `<div class="card selectable card${i}"></div>`
-    if (i == 12 || i == 25 || i == 38) {
-        selectableCardsHTML += `<br>`
+//for (let i = 0; i < NumCards; i++) {
+for (let suit = 0; suit < 4; suit++) {
+    for (let face = 0; face < 13; face++) {
+        const i = face * 4 + suit
+        selectableCardsHTML += `<div class="card selectable card${i}"></div>`
     }
+    selectableCardsHTML += `<br>`
 }
 document.getElementById("selectableCards").innerHTML = selectableCardsHTML
 
@@ -75,8 +81,10 @@ function setSummaryCounts(counts) {
 }
 
 async function displaySummary() {
-    const selectedSelectableCards = document.getElementById("selectableCards").getElementsByClassName("selected")
-    const cards = [].slice.call(selectedSelectableCards)
+    //const selectedSelectableCards = document.getElementById("selectableCards").getElementsByClassName("selected")
+    //const cards = [].slice.call(selectedSelectableCards)
+    const selectedCards = document.getElementById("selectedCards").getElementsByClassName("selected")
+    const cards = [].slice.call(selectedCards)
     const cardStrIds = cards.map(card => {
         for (let cl of card.classList) {
             if (cl.startsWith("card") && cl.length > 4) {
@@ -89,7 +97,7 @@ async function displaySummary() {
     const intPrefix = new DataView(hash).getBigInt64(0, true)
     const prefix = ((intPrefix % 49n) + 49n) % 49n
 
-    fetch(`../web/scores/four_summaries_${prefix}.json`)
+    fetch(`../scores/four/four_summaries_${prefix}.json`)
     .then(res => res.text())
     .then(text => {
         const c = JSON.parse(text)
@@ -106,14 +114,26 @@ async function displaySummary() {
 function drawSelectedCards() {
     const selectedSelectableCards = document.getElementById("selectableCards").getElementsByClassName("selected")
     const selectedCards = document.getElementById("selectedCards").getElementsByClassName("selected")
+
     // first reset current selected cards
     for (let i = 0; i < selectedCards.length; i++) {
         selectedCards[i].className = "card selected"
     }
+
     // then fill in with latest selection
+
+    const selectedCardIds = []
+
     for (let i = 0; i < selectedSelectableCards.length; i++) {
         const { cardId } = classListToCard(selectedSelectableCards[i].classList)
-        selectedCards[i].classList.add(cardId)
+        selectedCardIds.push(Number(cardId.substring(4)))
+        //selectedCards[i].classList.add(cardId)
+    }
+
+    selectedCardIds.sort((a,b) => a-b)
+
+    for (let i = 0; i < selectedCardIds.length; i++) {
+        selectedCards[i].classList.add(`card${selectedCardIds[i]}`)
     }
 
     if (selectedSelectableCards.length == 4) {

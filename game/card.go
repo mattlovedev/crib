@@ -188,13 +188,7 @@ func (c Cards) Sort() Cards {
 }
 
 func (c Cards) String() string {
-	// changing sort order for FE
-	sort.Slice(c, func(i int, j int) bool {
-		if c[i].Suit != c[j].Suit {
-			return c[i].Suit < c[j].Suit
-		}
-		return c[i].Face < c[j].Face
-	})
+	//c = c.Sort() // it should already be sorted
 	var sb strings.Builder
 	for _, card := range c {
 		sb.WriteString(card.String())

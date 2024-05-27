@@ -77,9 +77,6 @@ func generateSplitAllSummaries(dumpDir string) error {
 			log.Fatalf(err.Error())
 		}
 		prefixI := (int(prefix%49) + 49) % 49
-		if handString == "4c5c5d6d" {
-			fmt.Println(hash, prefix, prefixI)
-		}
 		summariesMaps[prefixI][handString] = counts.MakeSummaries(hand)
 	}
 
