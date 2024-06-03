@@ -3,6 +3,7 @@ package game
 import (
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 
 	"mattlove.dev/crib/game/math"
@@ -158,7 +159,29 @@ func CardByFaceSuit(face int, suit int) Card {
 	return cardsGlobal[id]
 }
 
+func CardsByIds(ids []int) Cards {
+	cards := make(Cards, len(ids))
+	for i, id := range ids {
+		cards[i] = cardsGlobal[id]
+	}
+	return cards
+}
+
+func CardsById(id int, num int) Cards {
+	// num will be 2, 4, 6
+	ids := math.IndexToCombination(nil, id, 52, num)
+	return CardsByIds(ids)
+}
+
 type Cards []Card
+
+func (c Cards) Id() int {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].Id
+	}
+	return math.CombinationIndex(ids, 52, len(c))
+}
 
 func SortedCards(cards ...Card) Cards {
 	return Cards(cards).Sort()
@@ -179,7 +202,7 @@ func (c Cards) Copy() Cards {
 	return cards
 }
 
-// TBD this might sort c as well
+// TBD this might sort c as well - It does
 func (c Cards) Sort() Cards {
 	sort.Slice(c, func(i int, j int) bool {
 		return c[i].Id < c[j].Id
@@ -192,6 +215,16 @@ func (c Cards) String() string {
 	var sb strings.Builder
 	for _, card := range c {
 		sb.WriteString(card.String())
+	}
+	return sb.String()
+}
+
+func (c Cards) StringIds() string {
+	//c = c.Sort() // it should already be sorted
+	var sb strings.Builder
+	sb.WriteString(strconv.Itoa(c[0].Id))
+	for i := 1; i < len(c); i++ {
+		sb.WriteString(fmt.Sprintf(" %d", c[i].Id))
 	}
 	return sb.String()
 }
@@ -218,4 +251,33 @@ func (c Cards) ChoseFour() []Cards {
 		}
 	}
 	return sets
+}
+
+func (c Cards) Choose(a int, b int) (four Cards, two Cards) {
+	four = make(Cards, 0, 4)
+	two = make(Cards, 0, 2)
+	for i := range c {
+		if i == a || i == b {
+			two = append(two, c[i])
+		} else {
+			four = append(four, c[i])
+		}
+	}
+	return
+}
+
+// first set is four chosen, second set is two not chosen
+func (c Cards) ChooseFourWithRemaining() (sets []Cards, remaining []Cards) {
+	sets = make([]Cards, 0, math.NCR6_4)
+	remaining = make([]Cards, 0, math.NCR6_4) // same as 6 choose 2
+
+	// since we're sorting six hands by avg prob dont need to build in this order
+	for j := len(c) - 1; j > 0; j-- {
+		for i := j - 1; i >= 0; i-- {
+			four, two := c.Choose(i, j)
+			sets = append(sets, four)
+			remaining = append(remaining, two)
+		}
+	}
+	return
 }

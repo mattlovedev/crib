@@ -9,14 +9,20 @@ func NewDeck() Deck {
 	return Deck{cardsGlobal.Copy(), 0}
 }
 
-func RemainingDeck(removed Cards) Deck {
-	cards := make(Cards, NumCards-len(removed))
-	index := 0
+func RemainingDeck(hand Cards, crib Cards) Deck {
+	cards := make(Cards, 0, NumCards-len(hand)-len(crib))
 
-	for i := range cardsGlobal {
-		if !removed.Contains(cardsGlobal[i]) {
-			cards[index] = cardsGlobal[i]
-			index++
+	removed := make(map[Card]struct{}, cap(cards))
+	for _, card := range hand {
+		removed[card] = struct{}{}
+	}
+	for _, card := range crib {
+		removed[card] = struct{}{}
+	}
+
+	for _, card := range cardsGlobal {
+		if _, found := removed[card]; !found {
+			cards = append(cards, card)
 		}
 	}
 
@@ -26,11 +32,11 @@ func RemainingDeck(removed Cards) Deck {
 	}
 }
 
-func (d *Deck) DealCard() Card {
+/*func (d *Deck) DealCard() Card {
 	card := d.Cards[d.Index]
 	d.Index++
 	return card
-}
+}*/
 
 func (d Deck) HasCards() bool {
 	return d.Index < len(d.Cards)

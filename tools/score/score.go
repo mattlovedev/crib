@@ -39,12 +39,8 @@ func countFive(cards game.Cards) {
 }
 
 func countSix(cards game.Cards) {
-	sets := cards.ChoseFour()
-	countMap := make(map[string]int, len(sets))
-	for _, set := range sets {
-		countMap[set.String()] = game.CountCards(set, nil, false)
-	}
-	fmt.Println(countMap)
+	summaries := counts.MakeSixHands(cards)
+	fmt.Println(summaries)
 }
 
 func main() {
