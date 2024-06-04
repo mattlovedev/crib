@@ -81,7 +81,7 @@ function setSummaryCounts(counts) {
 }
 
 function setHands(hands) {
-    var handsHTML = ""
+    var handsHTML = "<hr>"
     hands.forEach(hand => {
         handsHTML += `<div class="handRow">`
         handsHTML += `<div class="cards">`
