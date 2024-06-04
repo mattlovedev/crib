@@ -80,37 +80,59 @@ function setSummaryCounts(counts) {
     document.getElementById("counts").innerHTML = countsHTML
 }
 
+function setHands(hands) {
+    var handsHTML = ""
+    hands.forEach(hand => {
+        handsHTML += `<div class="handRow">`
+        handsHTML += `<div class="cards">`
+        hand.Hand.forEach(card => {
+            handsHTML += `<div class="card card${card}"></div>`
+        })
+        handsHTML += `</div>` // cards
+        handsHTML += `<div class="stats">`
+        handsHTML += `<div>`
+        handsHTML += `<h3>Avg:` + hand.Summary.Avg + `</h3>`
+        handsHTML += `<h3>Below Avg:` + hand.Summary.BelowAvg + `</h3>`
+        handsHTML += `<h3>Above Avg:` + hand.Summary.AboveAvg + `</h3>`
+        handsHTML += `</div>`
+        handsHTML += `<div>`
+        handsHTML += `<h3>Std Dev:` + hand.Summary.StdDev + `</h3>`
+        handsHTML += `<h3>Mode:` + hand.Summary.Mode + `</h3>`
+        handsHTML += `<h3>Mode Pct:` + hand.Summary.ModeP + `</h3>`
+        handsHTML += `</div>`
+        handsHTML += `<div>`
+        handsHTML += `<h3>Min:` + hand.Summary.Min + `</h3>`
+        handsHTML += `<h3>Median:` + hand.Summary.Median + `</h3>`
+        handsHTML += `<h3>Max:` + hand.Summary.Max + `</h3>`
+        handsHTML += `</div>`
+        handsHTML += `</div>` // stats
+        handsHTML += `</div>` // handRow
+        handsHTML += `<hr>`
+    })
+    document.getElementById("hands").innerHTML = handsHTML
+}
+
 async function displaySummary() {
     const selectedCards = document.getElementById("selectedCards").getElementsByClassName("selected")
     const cards = [].slice.call(selectedCards)
-    const cardStrIds = cards.map(card => {
+
+    const cardIds = cards.map(card => {
         for (let cl of card.classList) {
             if (cl.startsWith("card") && cl.length > 4) {
-                return indexToString[parseInt(cl.substring(4))]
+                return parseInt(cl.substring(4))
             }
         }
-    }).reduce((acc, cur) => acc + cur, "")
-
-    const hash = await window.crypto.subtle.digest("SHA-1", new TextEncoder().encode(cardStrIds))
-    const intPrefix = new DataView(hash).getBigInt64(0, true)
-    const prefix = ((intPrefix % 47n) + 47n) % 47n
-
-    console.log(cardStrIds)
-
-    fetch(`../scores/six/six_summaries_${prefix}.json`)
-    .then(res => res.text())
-    .then(text => {
-        const c = JSON.parse(text)
-        const hand = c[cardStrIds]
-
-        console.log(hand)
-
-        //setSummaryStats(hand)
-        //setSummaryCounts(hand.Counts)
-
-        document.getElementById("selectableCards").style.display = "none"
-        //document.getElementById("summary").style.display = "block"
     })
+
+    const hand = cardIds.map(id => Card(id))
+
+    const hands = makeSixHands(hand)
+
+    console.log(hands)
+    setHands(hands)
+
+    document.getElementById("selectableCards").style.display = "none"
+    document.getElementById("hands").style.display = "block"
 }
 
 function drawSelectedCards() {
@@ -138,6 +160,12 @@ function drawSelectedCards() {
         selectedCards[i].classList.add(`card${selectedCardIds[i]}`)
     }
 
+    if (selectedCardIds.length > 0) {
+        history.replaceState(null, "", selectedCardIds.reduce((acc, curr) => acc + indexToString[curr] , "#"))
+    } else {
+        history.replaceState(null, "", "#")
+    }
+
     if (selectedSelectableCards.length == 6) {
         displaySummary()
     }
@@ -161,3 +189,9 @@ const cards = document.getElementById("selection").getElementsByClassName("card"
 Array.from(cards).forEach(card => {
     card.addEventListener("click", selectCard)
 })
+
+const hash = window.location.hash.substring(1)
+for (let i = 0; i < hash.length; i+=2) {
+    document.getElementsByClassName(`card${stringToIndex[hash.substring(i, i+2)]}`)[0].classList.add("selected")
+}
+drawSelectedCards()

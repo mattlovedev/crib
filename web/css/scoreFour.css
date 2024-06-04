@@ -67,5 +67,41 @@ body {
 }
 
 #counts .card {
-    zoom: 0.50;
+    zoom: 0.4;
+}
+
+#hands {
+    display: none;
+    border: 0px solid green;
+}
+
+#hands div.handRow {
+    border: 0px solid yellow;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 15px;
+}
+
+
+#hands div.handRow div.cards {
+    border: 0px solid blue;
+    display: inline-block;
+    width: 30%;
+}
+
+#hands div.handRow div.stats {
+    border: 0px solid red;
+    display: inline-block;
+    width: 60%;
+}
+
+#hands div.handRow div.stats div {
+    border: 0px solid orange;
+    display: inline-block;
+    width: 30%;
+}
+
+#hands div.handRow div.stats div h3 {
+    display: block;
 }

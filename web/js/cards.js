@@ -101,9 +101,38 @@ const Card = id => {
     }
 }
 
-const Deck = cards => {
+const Choose = (cards, a, b) => {
+    const four = []
+    const two = []
+    cards.forEach((card, index) => {
+        if (index == a || index == b) {
+            two.push(card)
+        } else {
+            four.push(card)
+        }
+    })
+    return [ four, two ]
+}
+
+const ChooseFourWithRemaining = cards => {
+    const sets = []
+    const remaining = []
+    for (let j = cards.length - 1; j > 0; j--) {
+        for (let i = j - 1; i >= 0; i--) {
+            const [four, two] = Choose(cards, i, j)
+            sets.push(four)
+            remaining.push(two)
+        }
+    }
+    return [ sets, remaining ]
+}
+
+const Deck = (cards, crib) => {
     const removed = {}
     cards.forEach(card => {
+        removed[card.id] = card
+    })
+    crib?.forEach(card => {
         removed[card.id] = card
     })
     const deck = []
@@ -242,9 +271,9 @@ const countCards = (hole, cut, asCrib) => {
     return count
 }
 
-const makeFourScores = hand => {
+const makeFourScores = (hand, crib) => {
     const scores = {}
-    const deck = Deck(hand)
+    const deck = Deck(hand, crib)
     deck.forEach(cut => {
         const count = countCards(hand, cut, false)
         scores[cut.id] = count
@@ -252,9 +281,8 @@ const makeFourScores = hand => {
     return scores
 }
 
-
-const makeSummaries = hand => {
-    const scores = makeFourScores(hand)
+const makeSummaries = (hand, crib) => {
+    const scores = makeFourScores(hand, crib)
 	let sum = 0
 	const vals = []
 	const countCuts = {}
@@ -304,4 +332,18 @@ const makeSummaries = hand => {
         StdDev: stdDev.toFixed(2),
         Counts: countCuts
     }
+}
+
+const makeSixHands = cards => {
+    const [ sets, remaining ] = ChooseFourWithRemaining(cards)
+    const summaries = []
+    for (let i = 0; i < sets.length; i++) {
+        summaries.push({
+            Hand: sets[i].map(card => card.id),
+            Crib: remaining[i].map(card => card.id),
+            Summary: makeSummaries(sets[i], remaining[i])
+        })
+    }
+    summaries.sort((a,b) => b.Summary.Avg - a.Summary.Avg)
+    return summaries
 }

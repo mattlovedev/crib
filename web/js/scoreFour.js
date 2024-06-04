@@ -73,7 +73,6 @@ function setSummaryCounts(counts) {
         countsHTML += `<div class="countsRow">`
         countsHTML += `<div class="countsHeader">${count} (${values.length}):</div>`
         values.forEach(card => {
-            //countsHTML += `<div class="card card${stringToIndex[card]}"></div>`
             countsHTML += `<div class="card card${card}"></div>`
         })
         countsHTML += `</div>` // countsRow
@@ -82,17 +81,8 @@ function setSummaryCounts(counts) {
 }
 
 async function displaySummary() {
-    //const selectedSelectableCards = document.getElementById("selectableCards").getElementsByClassName("selected")
-    //const cards = [].slice.call(selectedSelectableCards)
     const selectedCards = document.getElementById("selectedCards").getElementsByClassName("selected")
     const cards = [].slice.call(selectedCards)
-    /*const cardStrIds = cards.map(card => {
-        for (let cl of card.classList) {
-            if (cl.startsWith("card") && cl.length > 4) {
-                return indexToString[parseInt(cl.substring(4))]
-            }
-        }
-    }).reduce((acc, cur) => acc + cur, "")*/
 
     const cardIds = cards.map(card => {
         for (let cl of card.classList) {
@@ -111,23 +101,6 @@ async function displaySummary() {
 
     document.getElementById("selectableCards").style.display = "none"
     document.getElementById("summary").style.display = "block"
-
-    /*const hash = await window.crypto.subtle.digest("SHA-1", new TextEncoder().encode(cardStrIds))
-    const intPrefix = new DataView(hash).getBigInt64(0, true)
-    const prefix = ((intPrefix % 17n) + 17n) % 17n
-
-    fetch(`../scores/four/four_summaries_${prefix}.json`)
-    .then(res => res.text())
-    .then(text => {
-        const c = JSON.parse(text)
-        const hand = c[cardStrIds]
-
-        setSummaryStats(hand)
-        setSummaryCounts(hand.Counts)
-
-        document.getElementById("selectableCards").style.display = "none"
-        document.getElementById("summary").style.display = "block"
-    })*/
 }
 
 function drawSelectedCards() {
@@ -155,6 +128,12 @@ function drawSelectedCards() {
         selectedCards[i].classList.add(`card${selectedCardIds[i]}`)
     }
 
+    if (selectedCardIds.length > 0) {
+        history.replaceState(null, "", selectedCardIds.reduce((acc, curr) => acc + indexToString[curr] , "#"))
+    } else {
+        history.replaceState(null, "", "#")
+    }
+
     if (selectedSelectableCards.length == 4) {
         displaySummary()
     }
@@ -178,3 +157,9 @@ const cards = document.getElementById("selection").getElementsByClassName("card"
 Array.from(cards).forEach(card => {
     card.addEventListener("click", selectCard)
 })
+
+const hash = window.location.hash.substring(1)
+for (let i = 0; i < hash.length; i+=2) {
+    document.getElementsByClassName(`card${stringToIndex[hash.substring(i, i+2)]}`)[0].classList.add("selected")
+}
+drawSelectedCards()
