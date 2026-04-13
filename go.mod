@@ -1,3 +1,3 @@
 module mattlove.dev/crib
 
-go 1.19
+go 1.26
