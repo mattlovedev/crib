@@ -239,6 +239,16 @@ func (c Cards) ChooseTwo() []Cards {
 	return pairs
 }
 
+func (c Cards) ChoseTwo() []Cards {
+	sets := make([]Cards, 0, math.NChooseR(len(c), 2))
+	for i := 0; i < len(c)-1; i++ {
+		for j := i + 1; j < len(c); j++ {
+			sets = append(sets, Cards{c[i], c[j]})
+		}
+	}
+	return sets
+}
+
 func (c Cards) ChoseFour() []Cards {
 	sets := make([]Cards, 0, math.NChooseR(len(c), 4))
 	for i := 0; i < len(c)-3; i++ {
