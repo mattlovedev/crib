@@ -1,7 +1,7 @@
 'use strict'
 
 // Card sprite: face = id/4, suit = id%4
-// x = face * -148 + face/3, y = suit * -230  (from scoreFour.js)
+// x = face * -CARD_W + face/3, y = suit * -CARD_H  (from scoreFour.js)
 // We render at 50% scale: 74x115 px display
 const SCALE = 0.5
 const CARD_W = 148, CARD_H = 230
@@ -9,9 +9,9 @@ const CARD_W = 148, CARD_H = 230
 function cardBgStyle(id) {
   const face = Math.floor(id / 4)
   const suit = id % 4
-  const x = (face * -148 + face / 3) * SCALE
-  const y = suit * -230 * SCALE
-  const bw = Math.round(148 * 13 * SCALE) + 'px'
+  const x = (face * -CARD_W + face / 3) * SCALE
+  const y = suit * -CARD_H * SCALE
+  const bw = Math.round(CARD_W * 13 * SCALE) + 'px'
   return `background:url('/web/img/cards.png') ${x}px ${y}px; background-size:${bw} auto;`
 }
 
@@ -24,12 +24,6 @@ function cardEl(id, classes = []) {
   } else {
     div.classList.add('face-down')
   }
-  return div
-}
-
-function faceDown() {
-  const div = document.createElement('div')
-  div.className = 'card face-down'
   return div
 }
 
@@ -76,10 +70,6 @@ function cardName(id) {
   return faces[Math.floor(id/4)] + suits[id%4]
 }
 
-// Build CSS classes for card sprite once
-const styleEl = document.createElement('style')
-document.head.appendChild(styleEl)
-
 async function api(path, body) {
   const res = await fetch(path, {
     method: 'POST',
@@ -114,7 +104,7 @@ function renderLog(s) {
 function renderDiscard(s) {
   elAILabel.textContent = "AI's Hand"
   elAIHand.innerHTML = ''
-  for (let i = 0; i < 6; i++) elAIHand.appendChild(faceDown())
+  for (let i = 0; i < 6; i++) elAIHand.appendChild(cardEl(-1))
 
   elHumanLabel.textContent = 'Your Hand — pick 2 to discard'
   elHumanHand.innerHTML = ''
@@ -153,7 +143,7 @@ function toggleDiscard(el, id) {
 function renderPeg(s) {
   elAILabel.textContent = `AI's Hand (${s.ai_hand_count} cards)`
   elAIHand.innerHTML = ''
-  for (let i = 0; i < s.ai_hand_count; i++) elAIHand.appendChild(faceDown())
+  for (let i = 0; i < s.ai_hand_count; i++) elAIHand.appendChild(cardEl(-1))
   // show AI played cards next to face-down
   if (s.ai_played && s.ai_played.length > 0) {
     const sep = document.createElement('span')

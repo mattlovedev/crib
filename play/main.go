@@ -29,7 +29,6 @@ const (
 )
 
 type Session struct {
-	mu  sync.Mutex
 	rng *rand.Rand
 	ai  strategy.Player
 
@@ -596,7 +595,6 @@ func handleNext(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	start := time.Now()
-	rng := rand.New(rand.NewSource(start.UnixNano()))
 
 	fmt.Print("Building hand score cache... ")
 	cache := discard.NewSummaryCache()
@@ -609,8 +607,6 @@ func main() {
 	d := discard.MaxAvgDiff{Cache: cache, CribCache: cribCache}
 	p := peg.MaxSetup{}
 	aiPlayer = strategy.NewStrategy("MaxAvgDiff/MaxSetup", d, p)
-
-	_ = rng
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/new", handleNew)
