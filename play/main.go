@@ -279,6 +279,13 @@ func (s *Session) advancePegging() {
 		}
 	}
 
+	// Last card: 1 point to whoever played it (a 31 already scored 2 and reset LastToPlay).
+	if s.LastToPlay >= 0 && s.PegCount != 31 {
+		if s.pegPoints(s.LastToPlay, 1, "last card") {
+			return
+		}
+	}
+
 	s.enterScoringPhase()
 }
 

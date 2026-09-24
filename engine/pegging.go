@@ -67,6 +67,15 @@ func doPegging(players [2]strategy.Player, hands [2]game.Cards, dealer int, resu
 		}
 	}
 
+	// Last card: 1 point to whoever played it (a 31 already scored 2 and reset lastToPlay).
+	if lastToPlay >= 0 && count != 31 {
+		result.Scores[lastToPlay]++
+		result.PeggedPoints[lastToPlay]++
+		if result.Scores[lastToPlay] >= winScore {
+			return true
+		}
+	}
+
 	return false
 }
 
