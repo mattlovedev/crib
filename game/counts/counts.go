@@ -310,7 +310,8 @@ func makeSummaries(hand game.Cards, crib game.Cards, omitCounts bool) FourSummar
 	mode := 0
 	modeCount := 0
 	for count, cuts := range countCuts {
-		if len(cuts) > modeCount {
+		// ties go to the lower score so the result doesn't depend on map iteration order
+		if len(cuts) > modeCount || (len(cuts) == modeCount && count < mode) {
 			mode = count
 			modeCount = len(cuts)
 		}
