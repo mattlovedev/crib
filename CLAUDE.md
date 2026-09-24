@@ -95,4 +95,4 @@ Cards are 2-char strings (`as`, `2h`) and integer IDs (0–51). The `game/` pack
 
 ## Legacy Code
 
-`/java/` contains an older Java implementation — not actively developed.
+`/legacy/java/` contains the original Java implementation (the first version of the scoring logic), kept for reference — not actively developed or built.
