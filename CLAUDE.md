@@ -87,7 +87,7 @@ Both caches are built at sim startup and injected into strategies:
 
 ### Frontend
 
-Three HTML entry points: `index.html` (landing), `four/index.html`, `six/index.html`. No build step — pure static files. `web/js/combinatorics.js` mirrors the Go math package client-side.
+Three HTML entry points: `index.html` (landing), `four/index.html`, `six/index.html`. No build step — pure static files.
 
 ### Card Representation
 
