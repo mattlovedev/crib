@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cribbage</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="stylesheet" href="/play/play.css">
+</head>
+<body>
+
+<div id="app">
+  <div id="scoreboard">
+    <div class="score-block">
+      <div class="score-label">AI</div>
+      <div class="score-value" id="score-ai">0</div>
+      <div class="dealer-badge" id="dealer-ai">DEALER</div>
+    </div>
+    <div id="score-track">
+      <div id="score-bar-ai"></div>
+      <div id="score-bar-human"></div>
+    </div>
+    <div class="score-block">
+      <div class="score-label">You</div>
+      <div class="score-value" id="score-human">0</div>
+      <div class="dealer-badge" id="dealer-human">DEALER</div>
+    </div>
+  </div>
+
+  <div id="game-area">
+    <!-- AI area -->
+    <div id="ai-area" class="player-area">
+      <div class="area-label" id="ai-label">AI's Hand</div>
+      <div class="cards-row" id="ai-hand"></div>
+    </div>
+
+    <!-- Cut + crib -->
+    <div id="middle-area">
+      <div id="cut-area">
+        <div class="area-label">Cut</div>
+        <div id="cut-card"></div>
+      </div>
+      <div id="crib-area" style="display:none">
+        <div class="area-label" id="crib-label">Crib</div>
+        <div class="cards-row" id="crib-cards"></div>
+      </div>
+    </div>
+
+    <!-- Peg area -->
+    <div id="peg-area" style="display:none">
+      <div id="peg-count-display">Count: <span id="peg-count">0</span></div>
+      <div id="peg-played">
+        <div class="cards-row" id="peg-series"></div>
+      </div>
+    </div>
+
+    <!-- Human area -->
+    <div id="human-area" class="player-area">
+      <div class="area-label" id="human-label">Your Hand</div>
+      <div class="cards-row" id="human-hand"></div>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div id="controls">
+    <button id="btn-discard" style="display:none" disabled>Discard Selected (0/2)</button>
+    <button id="btn-go" style="display:none">Say Go</button>
+    <button id="btn-next" style="display:none">Next Round</button>
+    <button id="btn-new">New Game</button>
+  </div>
+
+  <!-- Log -->
+  <div id="log-area">
+    <div id="log-title">Events</div>
+    <div id="log-entries"></div>
+  </div>
+</div>
+
+<!-- Score/win overlay -->
+<div id="overlay" style="display:none">
+  <div id="overlay-content">
+    <div id="overlay-title"></div>
+    <div id="round-scores"></div>
+    <button id="btn-overlay-next">Next Round</button>
+    <button id="btn-overlay-new">New Game</button>
+  </div>
+</div>
+
+<script src="/play/play.js"></script>
+</body>
+</html>
