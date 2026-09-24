@@ -78,7 +78,7 @@ func generateSplitAllSummaries() error {
 		buf := bytes.NewBuffer(hash[:])
 		var prefix int64
 		if err := binary.Read(buf, binary.LittleEndian, &prefix); err != nil {
-			log.Fatalf(err.Error())
+			log.Fatal(err)
 		}
 		prefixI := (int(prefix%FourPrime) + FourPrime) % FourPrime
 		summariesMaps[prefixI][handString] = counts.MakeSummaries(hand)
@@ -135,7 +135,7 @@ func hashedCards(cards game.Cards, prime int) int {
 	buf := bytes.NewBuffer(hash[:])
 	var prefix int64
 	if err := binary.Read(buf, binary.LittleEndian, &prefix); err != nil {
-		log.Fatalf(err.Error())
+		log.Fatal(err)
 	}
 	prefixI := (int(prefix%int64(prime)) + prime) % prime
 	return prefixI
