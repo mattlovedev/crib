@@ -1,0 +1,57 @@
+# Publishes site/ to GitHub Pages (mattlove.dev/crib/) after checking that the site's
+# JS scoring still matches the Go implementation. Requires Settings → Pages → Source:
+# "GitHub Actions".
+name: Deploy site
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      # the parity check compares site/web/js against these
+      - "game/**"
+      - "scripts/parity/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# one deployment at a time; let an in-progress deployment finish
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: go vet ./...
+      - name: Site JS scoring matches Go
+        shell: bash # -o pipefail, so a Go failure fails the step
+        run: go run ./scripts/parity | node scripts/parity/check.js
+
+  deploy:
+    needs: check
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+      - id: deployment
+        uses: actions/deploy-pages@v5

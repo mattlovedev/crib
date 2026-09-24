@@ -1,5 +1,5 @@
 // Command parity prints Go's hand statistics so check.js can compare them against the
-// JavaScript scoring in web/js/cards.js, which re-implements the same logic for the site.
+// JavaScript scoring in site/web/js/cards.js, which re-implements the same logic for the site.
 //
 //	go run ./scripts/parity | node scripts/parity/check.js
 //

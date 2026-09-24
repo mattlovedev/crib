@@ -1,4 +1,4 @@
-// Compares the hand statistics computed by web/js/cards.js against Go's, read from stdin.
+// Compares the hand statistics computed by site/web/js/cards.js against Go's, read from stdin.
 // Exits non-zero if any statistic differs. See main.go for the input format.
 //
 //   go run ./scripts/parity | node scripts/parity/check.js
@@ -7,7 +7,7 @@ const fs = require("fs")
 const path = require("path")
 
 // cards.js is a plain browser script; load its top-level declarations into this scope.
-eval(fs.readFileSync(path.join(__dirname, "../../web/js/cards.js"), "utf8").replace(/^const /gm, "var "))
+eval(fs.readFileSync(path.join(__dirname, "../../site/web/js/cards.js"), "utf8").replace(/^const /gm, "var "))
 
 const statNames = ["Avg", "Min", "Median", "Max", "Mode", "ModeP", "BelowAvg", "AboveAvg", "StdDev"]
 const codes = ids => ids.map(id => indexToString[id]).join("")
@@ -51,4 +51,5 @@ for (const line of fs.readFileSync(0, "utf8").trim().split("\n")) {
 }
 
 console.log(`checked ${checked} summaries (${statNames.length} stats each): ${mismatches} mismatches`)
-process.exit(mismatches === 0 ? 0 : 1)
+// no input (e.g. the Go side failed in a pipeline) must not count as a pass
+process.exit(checked > 0 && mismatches === 0 ? 0 : 1)

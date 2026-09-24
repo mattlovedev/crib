@@ -531,12 +531,16 @@ func main() {
 	mux.HandleFunc("/api/discard", handleDiscard)
 	mux.HandleFunc("/api/peg", handlePeg)
 	mux.HandleFunc("/api/next", handleNext)
+	// The game page lives in play/; card images, the favicon, and the hand analysis
+	// pages come from the static site in site/. Run from the repo root.
+	mux.Handle("/play/", http.FileServer(http.Dir(".")))
+	site := http.FileServer(http.Dir("site"))
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/" {
 			http.Redirect(w, r, "/play/", http.StatusFound)
 			return
 		}
-		http.FileServer(http.Dir(".")).ServeHTTP(w, r)
+		site.ServeHTTP(w, r)
 	})
 
 	addr := ":8080"
