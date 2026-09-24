@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
-	"fmt"
 	"math"
 	"mattlove.dev/crib/game"
 	cribmath "mattlove.dev/crib/game/math"
@@ -32,8 +31,6 @@ func (h SixHand) toData() sixHandChoice {
 		AboveAvg: uint8(h.Summary.AboveAvg),
 		StdDev:   float32(h.Summary.StdDev),
 	}
-	fmt.Println(h)
-	fmt.Println(sh)
 	return sh
 }
 
@@ -68,7 +65,6 @@ func (h *SixHand) UnmarshalBinary(data []byte) error {
 	r := bytes.NewReader(data)
 	s := sixHandChoice{}
 	if err := binary.Read(r, binary.LittleEndian, &s); err != nil {
-		panic(err)
 		return err
 	}
 	h.Hand = game.CardsById(int(s.Hand), 4)
@@ -114,7 +110,6 @@ func (h *SixHands) UnmarshalBinary(data []byte) error {
 	size := len(data) / 15
 	for i := range h {
 		if err := h[i].UnmarshalBinary(data[i*size : (i+1)*size]); err != nil {
-			panic(err)
 			return err
 		}
 	}
