@@ -12,7 +12,7 @@ import (
 type SummaryCache map[string]counts.FourSummary
 
 func NewSummaryCache() SummaryCache {
-	hands := game.NewDeck().Cards.ChoseFour()
+	hands := game.NewDeck().Cards.ChooseFour()
 	cache := make(SummaryCache, len(hands))
 	for _, hand := range hands {
 		cache[hand.String()] = counts.MakeSummariesNoCounts(hand)
@@ -32,7 +32,7 @@ func (c SummaryCache) lookup(hand game.Cards) counts.FourSummary {
 type TwoCribCache map[string]float64
 
 func NewTwoCribCache() TwoCribCache {
-	pairs := game.NewDeck().Cards.ChoseTwo()
+	pairs := game.NewDeck().Cards.ChooseTwo()
 	results := make([]float64, len(pairs))
 
 	var wg sync.WaitGroup

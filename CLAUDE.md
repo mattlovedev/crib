@@ -80,7 +80,7 @@ Both caches are built at sim startup and injected into strategies:
 
 ### Key Packages
 
-- **`game/`** — Core cribbage logic: Card (ID = face×4 + suit, range 0–51), deck, hand scoring (`CountCards`), pegging scoring (`ScorePeggingPlay`), combinatorics helpers (`ChoseFour`, `ChoseTwo`, `ChooseFourWithRemaining`)
+- **`game/`** — Core cribbage logic: Card (ID = face×4 + suit, range 0–51), deck, hand scoring (`CountCards`), pegging scoring (`ScorePeggingPlay`), combinatorics helpers (`ChooseFour`, `ChooseTwo`, `ChooseFourWithRemaining`)
 - **`game/math/`** — Binomial coefficients, `CombinationIndex`/`IndexToCombination`
 - **`game/counts/`** — `FourSummary` and `SixHands` structs with custom binary marshaling; stats include avg, min/max, median, mode, std dev
 - **`util/`** — File path constants and JSON/binary I/O helpers

@@ -108,18 +108,12 @@ const (
 	KingOfSpades
 )
 
-var (
-	faces       = []string{"ace", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "jack", "queen", "king"}
-	suits       = []string{"hearts", "clubs", "diamonds", "spades"}
-	cardsGlobal = make(Cards, NumCards)
-)
+var cardsGlobal = make(Cards, NumCards)
 
 func init() {
 	newCard := func(id int) Card {
 		face := id / NumSuits
 		suit := id % NumSuits
-		//face := id % NumFaces
-		//suit := id / NumFaces
 		value := face + 1
 		if value > 10 {
 			value = 10
@@ -155,7 +149,6 @@ func CardByIdString(id string) Card {
 
 func CardByFaceSuit(face int, suit int) Card {
 	id := face*NumSuits + suit
-	//id := suit*NumFaces + face
 	return cardsGlobal[id]
 }
 
@@ -183,10 +176,6 @@ func (c Cards) Id() int {
 	return math.CombinationIndex(ids, 52, len(c))
 }
 
-func SortedCards(cards ...Card) Cards {
-	return Cards(cards).Sort()
-}
-
 func (c Cards) Contains(card Card) bool {
 	for i := range c {
 		if c[i].Id == card.Id {
@@ -202,7 +191,7 @@ func (c Cards) Copy() Cards {
 	return cards
 }
 
-// TBD this might sort c as well - It does
+// Sort sorts c in place by Id and returns it.
 func (c Cards) Sort() Cards {
 	sort.Slice(c, func(i int, j int) bool {
 		return c[i].Id < c[j].Id
@@ -211,7 +200,6 @@ func (c Cards) Sort() Cards {
 }
 
 func (c Cards) String() string {
-	//c = c.Sort() // it should already be sorted
 	var sb strings.Builder
 	for _, card := range c {
 		sb.WriteString(card.String())
@@ -220,7 +208,6 @@ func (c Cards) String() string {
 }
 
 func (c Cards) StringIds() string {
-	//c = c.Sort() // it should already be sorted
 	var sb strings.Builder
 	sb.WriteString(strconv.Itoa(c[0].Id))
 	for i := 1; i < len(c); i++ {
@@ -230,16 +217,6 @@ func (c Cards) StringIds() string {
 }
 
 func (c Cards) ChooseTwo() []Cards {
-	pairs := make([]Cards, 0, math.NChooseR(len(c), 2))
-	for i := 0; i < len(c)-1; i++ {
-		for j := i + 1; j < len(c); j++ {
-			pairs = append(pairs, []Card{c[i], c[j]})
-		}
-	}
-	return pairs
-}
-
-func (c Cards) ChoseTwo() []Cards {
 	sets := make([]Cards, 0, math.NChooseR(len(c), 2))
 	for i := 0; i < len(c)-1; i++ {
 		for j := i + 1; j < len(c); j++ {
@@ -249,7 +226,7 @@ func (c Cards) ChoseTwo() []Cards {
 	return sets
 }
 
-func (c Cards) ChoseFour() []Cards {
+func (c Cards) ChooseFour() []Cards {
 	sets := make([]Cards, 0, math.NChooseR(len(c), 4))
 	for i := 0; i < len(c)-3; i++ {
 		for j := i + 1; j < len(c)-2; j++ {

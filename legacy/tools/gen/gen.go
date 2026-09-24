@@ -16,7 +16,7 @@ import (
 )
 
 func generateAllHands() error {
-	hands := game.NewDeck().Cards.ChoseFour()
+	hands := game.NewDeck().Cards.ChooseFour()
 
 	allScores := counts.NewAllFourHandCutCounts()
 
@@ -28,7 +28,7 @@ func generateAllHands() error {
 }
 
 func generateSplitAllHands() error {
-	hands := game.NewDeck().Cards.ChoseFour()
+	hands := game.NewDeck().Cards.ChooseFour()
 	scoresMaps := make(map[string]counts.AllFourHandCutCounts)
 
 	for _, hand := range hands {
@@ -50,7 +50,7 @@ func generateSplitAllHands() error {
 }
 
 func generateAllSummaries() error {
-	hands := game.NewDeck().Cards.ChoseFour()
+	hands := game.NewDeck().Cards.ChooseFour()
 
 	allSummaries := counts.NewAllFourHandSummaries(math.NCR52_4)
 
@@ -65,7 +65,7 @@ const FourPrime = 17
 const SixPrime = 47
 
 func generateSplitAllSummaries() error {
-	hands := game.NewDeck().Cards.ChoseFour()
+	hands := game.NewDeck().Cards.ChooseFour()
 	summariesMaps := make(map[int]counts.AllFourHandSummaries, FourPrime)
 
 	for i := 0; i < FourPrime; i++ {

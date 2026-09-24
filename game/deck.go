@@ -1,25 +1,11 @@
 package game
 
-import (
-	"math/rand"
-)
-
 type Deck struct {
 	Cards Cards
-	Index int
 }
 
 func NewDeck() Deck {
-	return Deck{cardsGlobal.Copy(), 0}
-}
-
-func NewShuffledDeck(seed int64) Deck {
-	cards := cardsGlobal.Copy()
-	rng := rand.New(rand.NewSource(seed))
-	rng.Shuffle(len(cards), func(i, j int) {
-		cards[i], cards[j] = cards[j], cards[i]
-	})
-	return Deck{cards, 0}
+	return Deck{cardsGlobal.Copy()}
 }
 
 func RemainingDeck(hand Cards, crib Cards) Deck {
@@ -39,22 +25,5 @@ func RemainingDeck(hand Cards, crib Cards) Deck {
 		}
 	}
 
-	return Deck{
-		Cards: cards,
-		Index: 0,
-	}
-}
-
-/*func (d *Deck) DealCard() Card {
-	card := d.Cards[d.Index]
-	d.Index++
-	return card
-}*/
-
-func (d Deck) HasCards() bool {
-	return d.Index < len(d.Cards)
-}
-
-func (d Deck) RemainingLen() int {
-	return len(d.Cards) - d.Index
+	return Deck{Cards: cards}
 }
