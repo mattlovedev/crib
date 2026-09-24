@@ -126,7 +126,7 @@ func CountCards(hole Cards, cut *Card, asCrib bool) int {
 		if asCrib && (cut == nil || cut.Suit != hole[0].Suit) {
 			return 0
 		}
-		if hole[0].Suit == cut.Suit {
+		if cut != nil && hole[0].Suit == cut.Suit {
 			return 5
 		}
 		return 4 // asCrib can't get down here
