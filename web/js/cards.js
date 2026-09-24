@@ -231,7 +231,7 @@ const makeSummaries = (hand, crib) => {
         countCuts[val].push(cut)
     }
     const avg = sum / vals.length
-    vals.sort()
+    vals.sort((a, b) => a - b)
     const min = vals[0]
     const max = vals[vals.length-1]
     const median = vals[vals.length/2]
