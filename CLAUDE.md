@@ -16,9 +16,9 @@ This repo has two distinct applications:
 go run ./sim
 go run ./sim 5000
 
-# Build/run hand analysis tools
-go run ./tools/score -- as 2h 3d 4c 5s
-go run ./tools/gen       # Generates all pre-computed hand summaries (slow, writes to scores/)
+# Score a hand from the command line (legacy dev tool)
+go run ./legacy/tools/score 5c 5d 5h js         # 4 cards: stats across all 48 cuts
+go run ./legacy/tools/score 5c 5d 5h js 6c 7c   # 6 cards: all 15 keep/discard options, best avg first
 
 # Run tests (currently none exist)
 go test ./...
