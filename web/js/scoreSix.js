@@ -49,37 +49,6 @@ function classListToCard(cl) {
 }
 
 
-function setSummaryStats(stats) {
-    const mappings = [
-        { field: "average", value: "Avg" },
-        { field: "belowAverage", value: "BelowAvg" },
-        { field: "aboveAverage", value: "AboveAvg" },
-        { field: "stdDev", value: "StdDev" },
-        { field: "mode", value: "Mode" },
-        { field: "modeP", value: "ModeP" },
-        { field: "min", value: "Min" },
-        { field: "median", value: "Median" },
-        { field: "max", value: "Max" }
-    ]
-
-    mappings.forEach(({ field, value }) => {
-        document.getElementById(field).innerHTML = stats[value]
-    })
-}
-
-function setSummaryCounts(counts) {
-    var countsHTML = ""
-    for (const [count, values] of Object.entries(counts)) {
-        countsHTML += `<div class="countsRow">`
-        countsHTML += `<div class="countsHeader">${count} (${values.length}):</div>`
-        values.forEach(card => {
-            countsHTML += `<div class="card card${stringToIndex[card]}"></div>`
-        })
-        countsHTML += `</div>` // countsRow
-    }
-    document.getElementById("counts").innerHTML = countsHTML
-}
-
 function setHands(hands) {
     var handsHTML = "<hr>"
     hands.forEach(hand => {

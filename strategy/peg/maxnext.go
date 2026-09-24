@@ -16,7 +16,8 @@ func (MaxNext) Play(hand game.Cards, state strategy.PeggingState) game.Card {
 		if state.Count+c.Value > 31 {
 			continue
 		}
-		pts := game.ScorePeggingPlay(state.Count+c.Value, append(state.Series, c))
+		series := append(state.Series[:len(state.Series):len(state.Series)], c) // full slice expr: never write into the caller's array
+		pts := game.ScorePeggingPlay(state.Count+c.Value, series)
 		if pts > bestPts || (pts == bestPts && c.Value > best.Value) || (pts == bestPts && c.Value == best.Value && c.Id < best.Id) {
 			best = c
 			bestPts = pts
