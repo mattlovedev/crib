@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"mattlove.dev/crib/engine"
 	"mattlove.dev/crib/game"
 	"mattlove.dev/crib/strategy"
 	"mattlove.dev/crib/strategy/discard"
@@ -43,12 +44,7 @@ type Session struct {
 	Cut    game.Card
 	CutSet bool
 
-	HumanInHand game.Cards
-	AIInHand    game.Cards
-	PegSeries   game.Cards
-	PegCount    int
-	PegCurrent  int // 0=human, 1=ai
-	LastToPlay  int // -1=none
+	peg         *engine.Pegging // nil until the discard; Hands indexed by humanIdx/aiIdx
 	HumanPlayed game.Cards
 	AIPlayed    game.Cards
 
@@ -112,8 +108,7 @@ func (s *Session) view() StateView {
 		AIHandCount: len(s.AIHand),
 		AIHand:      []int{},
 		Crib:        []int{},
-		PegCount:    s.PegCount,
-		PegSeries:   ids(s.PegSeries),
+		PegSeries:   []int{},
 		HumanPlayed: ids(s.HumanPlayed),
 		AIPlayed:    ids(s.AIPlayed),
 		Log:         s.Log,
@@ -122,8 +117,9 @@ func (s *Session) view() StateView {
 	if s.Log == nil {
 		v.Log = []string{}
 	}
-	if s.PegSeries == nil {
-		v.PegSeries = []int{}
+	if s.peg != nil {
+		v.PegCount = s.peg.Count
+		v.PegSeries = ids(s.peg.Series)
 	}
 
 	if s.CutSet {
@@ -140,13 +136,13 @@ func (s *Session) view() StateView {
 
 	if s.Phase == PhasePeg {
 		// Show remaining pegging cards, not full kept hand
-		v.HumanHand = ids(s.HumanInHand)
-		v.AIHandCount = len(s.AIInHand)
+		v.HumanHand = ids(s.peg.Hands[humanIdx])
+		v.AIHandCount = len(s.peg.Hands[aiIdx])
 		v.WhoseTurn = "human"
-		if s.PegCurrent == aiIdx {
+		if s.peg.Current == aiIdx {
 			v.WhoseTurn = "ai"
 		}
-		v.CanPlay = canPlayAny(s.HumanInHand, s.PegCount)
+		v.CanPlay = s.peg.CanPlay(humanIdx)
 	}
 
 	switch s.Winner {
@@ -173,11 +169,7 @@ func (s *Session) dealRound() {
 	s.Crib = nil
 	s.HumanPlayed = nil
 	s.AIPlayed = nil
-	s.HumanInHand = nil
-	s.AIInHand = nil
-	s.PegSeries = nil
-	s.PegCount = 0
-	s.LastToPlay = -1
+	s.peg = nil
 	s.Log = nil
 	s.Phase = PhaseDiscard
 	s.HumanHandScore = 0
@@ -201,36 +193,26 @@ func (s *Session) pegPoints(player, pts int, reason string) bool {
 	return false
 }
 
-func (s *Session) aiPlayOnePeg() bool {
-	card := s.ai.Play(s.AIInHand, strategy.PeggingState{Count: s.PegCount, Series: s.PegSeries})
-	s.AIInHand = removeCard(s.AIInHand, card)
-	s.AIPlayed = append(s.AIPlayed, card)
-	s.PegSeries = append(s.PegSeries, card)
-	s.PegCount += card.Value
-	s.LastToPlay = aiIdx
+// playPeg plays card for the current player, logs it, and scores it.
+// Returns true if that ended the game.
+func (s *Session) playPeg(card game.Card) bool {
+	player := s.peg.Current
+	name := "You play"
+	if player == aiIdx {
+		name = "AI plays"
+		s.AIPlayed = append(s.AIPlayed, card)
+	} else {
+		s.HumanPlayed = append(s.HumanPlayed, card)
+	}
 
-	pts := game.ScorePeggingPlay(s.PegCount, s.PegSeries)
-	msg := fmt.Sprintf("AI plays %s (count: %d)", card.String(), s.PegCount)
+	count, pts := s.peg.Play(card)
+	msg := fmt.Sprintf("%s %s (count: %d)", name, card.String(), count)
 	if pts > 0 {
 		msg += fmt.Sprintf(" +%d", pts)
 	}
 	s.Log = append(s.Log, msg)
 
-	if pts > 0 {
-		if s.pegPoints(aiIdx, pts, scoreReason(s.PegCount)) {
-			return true
-		}
-	}
-
-	if s.PegCount == 31 {
-		s.PegSeries = nil
-		s.PegCount = 0
-		s.LastToPlay = -1
-		s.PegCurrent = humanIdx
-	} else {
-		s.PegCurrent = humanIdx
-	}
-	return false
+	return pts > 0 && s.pegPoints(player, pts, scoreReason(count))
 }
 
 func scoreReason(count int) string {
@@ -243,45 +225,24 @@ func scoreReason(count int) string {
 	return "peg"
 }
 
-// advancePegging runs AI turns until it's human's turn or the round ends.
+// advancePegging applies go/last-card points and runs AI turns until it's the
+// human's turn, the game ends, or pegging is over (then scores the round).
 func (s *Session) advancePegging() {
-	for len(s.HumanInHand) > 0 || len(s.AIInHand) > 0 {
-		humanCanPlay := canPlayAny(s.HumanInHand, s.PegCount)
-		aiCanPlay := canPlayAny(s.AIInHand, s.PegCount)
-
-		if !humanCanPlay && !aiCanPlay {
-			if s.LastToPlay >= 0 && s.PegCount != 31 {
-				if s.pegPoints(s.LastToPlay, 1, "go") {
-					return
-				}
+	for {
+		if a, ok := s.peg.Resolve(); ok {
+			if s.pegPoints(a.Player, a.Points, a.Kind.String()) {
+				return
 			}
-			s.PegSeries = nil
-			s.PegCount = 0
-			if s.LastToPlay >= 0 {
-				s.PegCurrent = 1 - s.LastToPlay
-			}
-			s.LastToPlay = -1
 			continue
 		}
-
-		if s.PegCurrent == humanIdx && !humanCanPlay {
-			s.PegCurrent = aiIdx
-		} else if s.PegCurrent == aiIdx && !aiCanPlay {
-			s.PegCurrent = humanIdx
+		if s.peg.Done() {
+			break
 		}
-
-		if s.PegCurrent == humanIdx {
+		if s.peg.Current == humanIdx {
 			return
 		}
-
-		if s.aiPlayOnePeg() {
-			return
-		}
-	}
-
-	// Last card: 1 point to whoever played it (a 31 already scored 2 and reset LastToPlay).
-	if s.LastToPlay >= 0 && s.PegCount != 31 {
-		if s.pegPoints(s.LastToPlay, 1, "last card") {
+		card := s.ai.Play(s.peg.Hands[aiIdx], s.peg.State())
+		if s.playPeg(card) {
 			return
 		}
 	}
@@ -333,28 +294,6 @@ func (s *Session) enterScoringPhase() {
 	if s.Phase != PhaseGameOver {
 		s.Phase = PhaseScore
 	}
-}
-
-func canPlayAny(hand game.Cards, count int) bool {
-	for _, c := range hand {
-		if count+c.Value <= 31 {
-			return true
-		}
-	}
-	return false
-}
-
-func removeCard(hand game.Cards, card game.Card) game.Cards {
-	out := make(game.Cards, 0, len(hand)-1)
-	removed := false
-	for _, c := range hand {
-		if !removed && c.Id == card.Id {
-			removed = true
-			continue
-		}
-		out = append(out, c)
-	}
-	return out
 }
 
 func writeJSON(w http.ResponseWriter, v any) {
@@ -465,20 +404,15 @@ func handleDiscard(w http.ResponseWriter, r *http.Request) {
 		s.Scores[s.Dealer] += 2
 	}
 
-	// Setup pegging
-	s.HumanInHand = s.HumanHand.Copy()
-	s.AIInHand = s.AIHand.Copy()
+	// Setup pegging; the non-dealer leads
+	s.peg = engine.NewPegging([2]game.Cards{humanIdx: s.HumanHand, aiIdx: s.AIHand}, s.Dealer)
 	s.HumanPlayed = game.Cards{}
 	s.AIPlayed = game.Cards{}
-	s.PegSeries = nil
-	s.PegCount = 0
-	s.LastToPlay = -1
-	s.PegCurrent = 1 - s.Dealer // non-dealer leads
 
 	s.Phase = PhasePeg
 
 	// If AI leads, let it play
-	if s.PegCurrent == aiIdx {
+	if s.peg.Current == aiIdx {
 		s.advancePegging()
 	}
 
@@ -512,13 +446,17 @@ func handlePeg(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if s.peg.Current != humanIdx {
+		writeJSON(w, errView("not your turn"))
+		return
+	}
+
 	if req.Card == -1 {
 		// Human says go
-		if canPlayAny(s.HumanInHand, s.PegCount) {
+		if s.peg.CanPlay(humanIdx) {
 			writeJSON(w, errView("you have a legal play"))
 			return
 		}
-		s.PegCurrent = aiIdx
 		s.advancePegging()
 		writeJSON(w, s.view())
 		return
@@ -527,7 +465,7 @@ func handlePeg(w http.ResponseWriter, r *http.Request) {
 	// Find card in human's remaining hand
 	var played game.Card
 	found := false
-	for _, c := range s.HumanInHand {
+	for _, c := range s.peg.Hands[humanIdx] {
 		if c.Id == req.Card {
 			played = c
 			found = true
@@ -538,41 +476,14 @@ func handlePeg(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, errView("card not in hand"))
 		return
 	}
-	if s.PegCount+played.Value > 31 {
-		writeJSON(w, errView(fmt.Sprintf("would exceed 31 (count: %d)", s.PegCount)))
+	if s.peg.Count+played.Value > 31 {
+		writeJSON(w, errView(fmt.Sprintf("would exceed 31 (count: %d)", s.peg.Count)))
 		return
 	}
 
-	s.HumanInHand = removeCard(s.HumanInHand, played)
-	s.HumanPlayed = append(s.HumanPlayed, played)
-	s.PegSeries = append(s.PegSeries, played)
-	s.PegCount += played.Value
-	s.LastToPlay = humanIdx
-
-	pts := game.ScorePeggingPlay(s.PegCount, s.PegSeries)
-	msg := fmt.Sprintf("You play %s (count: %d)", played.String(), s.PegCount)
-	if pts > 0 {
-		msg += fmt.Sprintf(" +%d", pts)
+	if !s.playPeg(played) {
+		s.advancePegging()
 	}
-	s.Log = append(s.Log, msg)
-
-	if pts > 0 {
-		if s.pegPoints(humanIdx, pts, scoreReason(s.PegCount)) {
-			writeJSON(w, s.view())
-			return
-		}
-	}
-
-	if s.PegCount == 31 {
-		s.PegSeries = nil
-		s.PegCount = 0
-		s.LastToPlay = -1
-		s.PegCurrent = aiIdx
-	} else {
-		s.PegCurrent = aiIdx
-	}
-
-	s.advancePegging()
 	writeJSON(w, s.view())
 }
 
